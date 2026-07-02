@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Admin Dashboard | AI Quiz — 3D Cards</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+  --bg-dark: #030712;
+  --glass: rgba(255,255,255,0.04);
+  --accent-a: #7c5cff;
+  --accent-b: #00e0ff;
+  --accent-c: #ff6bcb;
+  --muted: rgba(230,238,248,0.78);
+  --card-glow: rgba(124,92,255,0.35);
+  --neon: 0 0 14px rgba(124,92,255,0.9);
+}
+
+* { box-sizing: border-box; }
+html,body { 
+  height:100%; margin:0; 
+  font-family:"Inter",system-ui;
+  color:#eef4ff;
+  background: var(--bg-dark);
+  overflow-x:hidden;
+}
+
+/* BACKGROUND IMPROVED */
+.bg-image {
+  position:fixed; inset:0; z-index:0;
+  background-image:url("/mnt/data/29b5b0f9-39e0-4c62-8027-ebd2666df9a6.png");
+  background-size: cover;
+  background-position:center;
+  filter: blur(6px) brightness(0.40) saturate(120%);
+  transform:scale(1.04);
+}
+.bg-gradient {
+  position:fixed; inset:0; z-index:1;
+  background:
+    radial-gradient(600px at 10% 20%, rgba(124,92,255,0.18), transparent 50%),
+    radial-gradient(700px at 90% 80%, rgba(0,224,255,0.16), transparent 50%);
+  animation: floatGlow 12s ease-in-out infinite alternate;
+  mix-blend-mode:screen;
+}
+@keyframes floatGlow {
+  0% { transform:translateY(0); opacity:0.9; }
+  100% { transform:translateY(-40px); opacity:1; }
+}
+.bg-fog {
+  position:fixed; inset:0;
+  background: linear-gradient(180deg, rgba(5,9,20,0.25), rgba(5,9,20,0.6));
+  z-index:2;
+}
+
+/* MAIN CONTAINER */
+.wrap {
+  position:relative; z-index:6;
+  min-height:100vh;
+  padding:54px;
+  display:flex; justify-content:center; align-items:flex-start;
+  perspective:1400px;
+}
+
+/* LAYOUT GRID */
+.layout {
+  width:100%; max-width:1300px;
+  display:grid;
+  grid-template-columns:360px 1fr;
+  gap:32px;
+}
+
+/* CARD ENHANCEMENTS */
+.card, .list-card, .active-card {
+  background: rgba(255,255,255,0.03);
+  border-radius:16px;
+  backdrop-filter: blur(14px) saturate(130%);
+  border:1px solid rgba(255,255,255,0.05);
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.55),
+    0 0 18px rgba(124,92,255,0.25);
+  transition: transform .35s cubic-bezier(.17,.67,.41,1.34),
+              box-shadow .35s ease;
+}
+.card:hover, .list-card:hover, .active-card:hover {
+  transform: translateY(-6px) translateZ(20px);
+  box-shadow:
+    0 40px 80px rgba(0,0,0,0.65),
+    0 0 22px rgba(124,92,255,0.4);
+}
+
+/* BRAND AREA */
+.logo {
+  width:58px; height:58px; border-radius:14px;
+  background:linear-gradient(135deg,var(--accent-a),var(--accent-b));
+  color:#031225;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; font-weight:800;
+  box-shadow:0 8px 30px var(--card-glow);
+}
+
+/* INPUTS & CONTROLS */
+input, select {
+  border-radius:10px;
+  padding:10px 12px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.06);
+  outline:none;
+  color:#eaf3ff;
+  backdrop-filter:blur(6px);
+  transition:border .2s;
+}
+input:focus, select:focus {
+  border:1px solid var(--accent-b);
+  box-shadow:0 0 8px rgba(0,224,255,0.6);
+}
+
+/* BUTTONS */
+.btn, .create-quick, .start-btn {
+  border:none;
+  border-radius:12px;
+  padding:12px 16px;
+  cursor:pointer;
+  font-weight:700;
+  transition:transform .2s, box-shadow .2s;
+}
+.btn-generate, .create-quick, .btn-primary {
+  background: linear-gradient(90deg,var(--accent-a),var(--accent-b));
+  color:#031225;
+  box-shadow:0 6px 20px rgba(0,224,255,0.25);
+}
+.btn-generate:hover, .create-quick:hover, .btn-primary:hover {
+  transform:scale(1.03);
+  box-shadow:0 8px 25px rgba(0,224,255,0.35);
+}
+.btn-logout {
+  background: rgba(255,80,80,0.12);
+  color:#ffb7b7;
+  display :flex; 
+  justify-content: center;
+  border:1px solid rgba(255,100,100,0.18);
+}
+.btn-logout:hover {
+  background:rgba(255,80,80,0.2);
+  box-shadow:0 0 14px rgba(255,100,100,0.4);
+}
+
+/* LIST ITEMS */
+.saved-item, .quiz-item {
+  backdrop-filter: blur(10px);
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.06);
+  padding:12px;
+  border-radius:12px;
+  transition:transform .22s, box-shadow .22s;
+}
+.saved-item:hover {
+  transform:translateY(-6px);
+  box-shadow:0 20px 40px rgba(0,0,0,0.5);
+}
+
+/* SCROLLBAR STYLING */
+.saved-list::-webkit-scrollbar, #quizzesListSmall::-webkit-scrollbar {
+  width:6px;
+}
+.saved-list::-webkit-scrollbar-thumb, #quizzesListSmall::-webkit-scrollbar-thumb {
+  background:linear-gradient(var(--accent-a),var(--accent-b));
+  border-radius:50px;
+}
+
+/* ACTIVE CARD TEXT */
+.active-card h3 { font-size:22px; }
+.muted { color:var(--muted); }
+
+/* RESPONSIVE IMPROVED */
+@media (max-width:1100px){
+  .layout { grid-template-columns:1fr; }
+  .list-card, .active-card, .card {
+    transform:none !important;
+  }
+}
+
+</style>
+</head>
+<body>
+  <div class="bg-image" aria-hidden="true"></div>
+  <div class="bg-gradient" aria-hidden="true"></div>
+  <div class="bg-fog" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <div class="layout">
+
+      <!-- LEFT: Admin controls -->
+      <aside class="card" aria-labelledby="adminTitle">
+        <div class="brand">
+          <div class="logo">AI</div>
+          <div>
+            <h1 id="adminTitle">Admin Dashboard</h1>
+            <p class="muted">Create & manage AI-generated quizzes</p>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label class="muted" style="font-size:13px;">Quick Create (title/topic/count)</label>
+          <input id="quizTitle" placeholder="Quiz Title" style="margin-top:8px; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:#eaf3ff;">
+          <input id="quizTopic" placeholder="Topic (e.g., Science)" style="margin-top:8px; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:#eaf3ff;">
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <input id="quizCount" type="number" placeholder="No. of Questions" min="1" style="flex:1; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:#eaf3ff;">
+            <select id="questionType" style="width:140px; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:#eaf3ff;">
+              <option value="short">Short</option>
+              <option value="mcq">MCQ</option>
+            </select>
+          </div>
+          <div style="margin-top:10px;">
+            <button id="generateQuizBtn" class="btn btn-generate">Generate Questions</button>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="logoutBtn" class="btn btn-logout">Logout</button>
+        </div>
+
+        <div class="stats" aria-hidden="true">
+          <div class="stat">
+            <h3 id="savedCount">0</h3>
+            <p>Saved Quizzes</p>
+          </div>
+          <div class="stat">
+            <h3 id="recentCount">0</h3>
+            <p>Recent Questions</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- RIGHT: quizzes area -->
+      <main class="main">
+
+        <div class="topbar">
+          <div class="searchbox">
+            <svg width="18" height="18" viewbox="0 0 24 24" style="opacity:.9" fill="none">
+              <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input id="searchInput" placeholder="Search saved quizzes..." />
+          </div>
+
+          <div style="display:flex; gap:10px;">
+            <button id="createDemoBtn" class="create-quick">Create Demo Quiz</button>
+          </div>
+        </div>
+
+        <div class="stack">
+          <section class="list-card" aria-labelledby="listTitle">
+            <h3 id="listTitle">Saved Quizzes</h3>
+            <div id="savedQuizzesList" class="saved-list" role="list"></div>
+          </section>
+
+          <section class="active-card" id="questionsSection" aria-live="polite">
+            <h3 id="activeTitle">Create / Edit Questions</h3>
+            <p class="muted">After generating questions, edit them here and submit to save the quiz.</p>
+
+            <form id="questionsForm" style="margin-top:12px;"></form>
+
+            <div class="actions" style="margin-top:12px;">
+              <button id="cancelEditBtn" class="btn-ghost">Cancel</button>
+              <button id="submitQuizBtn" class="btn-primary">Save Quiz</button>
+            </div>
+
+            <div style="margin-top:16px;">
+              <h4 style="margin:0 0 8px 0; color:#fff;">Recent Quizzes</h4>
+              <div id="quizzesListSmall" style="display:flex; flex-direction:column; gap:10px; max-height:120px; overflow:auto; padding-right:6px;"></div>
+            </div>
+          </section>
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Elements
+  const generateQuizBtn = document.getElementById('generateQuizBtn');
+  const submitQuizBtn = document.getElementById('submitQuizBtn');
+  const questionsSection = document.getElementById('questionsSection');
+  const questionsForm = document.getElementById('questionsForm');
+  const savedQuizzesList = document.getElementById('savedQuizzesList');
+  const quizzesListSmall = document.getElementById('quizzesListSmall');
+  const questionTypeSelect = document.getElementById('questionType');
+  const quizTitleInput = document.getElementById('quizTitle');
+  const quizTopicInput = document.getElementById('quizTopic');
+  const quizCountInput = document.getElementById('quizCount');
+  const savedCountEl = document.getElementById('savedCount');
+  const recentCountEl = document.getElementById('recentCount');
+  const searchInput = document.getElementById('searchInput');
+  const createDemoBtn = document.getElementById('createDemoBtn');
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const viewScoreboardBtn = document.getElementById('viewScoreboardBtn');
+
+  let currentQuiz = null;
+  let quizzes = JSON.parse(localStorage.getItem('quizzes') || '[]');
+
+  // Helpers
+  function updateStats() {
+    savedCountEl.textContent = quizzes.length;
+    recentCountEl.textContent = quizzes.slice(0,5).reduce((acc,q)=>acc+q.questions.length,0);
+  }
+
+  function renderSavedList(list = quizzes) {
+    savedQuizzesList.innerHTML = '';
+    quizzesListSmall.innerHTML = '';
+    if (!list.length) {
+      savedQuizzesList.innerHTML = '<div class="muted">No quizzes saved yet. Create one!</div>';
+      return;
+    }
+    list.forEach((q, idx) => {
+      const div = document.createElement('div');
+      div.className = 'saved-item';
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+          <div>
+            <div style="font-weight:800">${q.title}</div>
+            <div style="font-size:12px;color:var(--muted)">${q.topic} · ${q.questions.length} q</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="edit-btn" data-idx="${idx}" style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.03);border:none;cursor:pointer">Edit</button>
+            <button class="delete-btn" data-idx="${idx}" style="padding:8px 10px;border-radius:8px;background:linear-gradient(90deg,#ffd369,#ff7a7a);border:none;cursor:pointer">Delete</button>
+          </div>
+        </div>
+      `;
+      savedQuizzesList.appendChild(div);
+
+      // small list
+      const small = document.createElement('div');
+      small.style.fontSize='13px';
+      small.style.color='var(--muted)';
+      small.textContent = `${q.title} — ${q.topic}`;
+      quizzesListSmall.appendChild(small);
+    });
+  }
+
+  function clearForm() {
+    questionsForm.innerHTML = '';
+    currentQuiz = null;
+    document.getElementById('activeTitle').textContent = 'Create / Edit Questions';
+  }
+
+  function generateQuestionFields(count, type) {
+    questionsForm.innerHTML = '';
+    for (let i=1;i<=count;i++){
+      const qBlock = document.createElement('div');
+      qBlock.className = 'question-block';
+      qBlock.innerHTML = `
+        <label>Q${i}</label>
+        <input type="text" placeholder="Question ${i}" data-qindex="${i-1}" class="q-text" required>
+      `;
+      if (type === 'mcq') {
+        const optsHtml = document.createElement('div');
+        optsHtml.className = 'options';
+        optsHtml.innerHTML = `
+          <input type="text" placeholder="Option 1" class="opt" required style="margin-top:8px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#eaf3ff;">
+          <input type="text" placeholder="Option 2" class="opt" required style="margin-top:8px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#eaf3ff;">
+          <input type="text" placeholder="Option 3" class="opt" required style="margin-top:8px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#eaf3ff;">
+          <input type="text" placeholder="Option 4" class="opt" required style="margin-top:8px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#eaf3ff;">
+          <select class="ans-select" required style="margin-top:8px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#eaf3ff;">
+            <option value="0">Correct: Option 1</option>
+            <option value="1">Correct: Option 2</option>
+            <option value="2">Correct: Option 3</option>
+            <option value="3">Correct: Option 4</option>
+          </select>
+        `;
+        qBlock.appendChild(optsHtml);
+      } else {
+        qBlock.innerHTML += `<input type="text" placeholder="Correct answer" class="ans-text" required style="margin-top:8px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#eaf3ff;">`;
+      }
+      questionsForm.appendChild(qBlock);
+    }
+  }
+
+  // initial render
+  renderSavedList();
+  updateStats();
+
+  // Handlers
+  generateQuizBtn.addEventListener('click', () => {
+    const title = quizTitleInput.value.trim();
+    const topic = quizTopicInput.value.trim();
+    const count = parseInt(quizCountInput.value, 10) || 0;
+    const qtype = questionTypeSelect.value || 'short';
+
+    if (!title || !topic || !count || count < 1) {
+      alert('Please provide title, topic and valid number of questions.');
+      return;
+    }
+
+    // create skeleton currentQuiz and show fields
+    currentQuiz = { title, topic, questions: [] };
+    document.getElementById('activeTitle').textContent = `Editing: ${title}`;
+    generateQuestionFields(count, qtype);
+    questionsSection.scrollIntoView({behavior:'smooth'});
+  });
+
+  // Save quiz
+  submitQuizBtn.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    if (!currentQuiz) {
+      alert('Generate questions first.');
+      return;
+    }
+
+    const blocks = Array.from(questionsForm.querySelectorAll('.question-block'));
+    const qtype = questionTypeSelect.value || 'short';
+    const collected = [];
+
+    for (let b of blocks) {
+      const qText = (b.querySelector('.q-text') || {}).value || '';
+      if (!qText.trim()) { alert('Please fill all questions.'); return; }
+
+      if (qtype === 'mcq') {
+        const opts = Array.from(b.querySelectorAll('.opt')).map(x => x.value.trim());
+        if (opts.some(o => !o)) { alert('Please fill all options.'); return; }
+        const ansIndex = b.querySelector('.ans-select').value;
+        collected.push({ type: 'mcq', question: qText.trim(), options: opts, answer: opts[ansIndex] });
+      } else {
+        const ans = (b.querySelector('.ans-text') || {}).value || '';
+        if (!ans.trim()) { alert('Please fill all answers.'); return; }
+        collected.push({ type: 'short', question: qText.trim(), answer: ans.trim() });
+      }
+    }
+
+    currentQuiz.questions = collected;
+    quizzes.unshift(currentQuiz);
+    localStorage.setItem('quizzes', JSON.stringify(quizzes));
+    renderSavedList();
+    updateStats();
+    clearForm();
+    quizTitleInput.value = '';
+    quizTopicInput.value = '';
+    quizCountInput.value = '';
+    alert(`Quiz "${currentQuiz.title}" saved.`);
+  });
+
+  // Edit / Delete from saved list
+  savedQuizzesList.addEventListener('click', (e) => {
+    const editBtn = e.target.closest('.edit-btn');
+    const delBtn = e.target.closest('.delete-btn');
+    if (editBtn) {
+      const idx = Number(editBtn.dataset.idx);
+      const q = quizzes[idx];
+      if (!q) return;
+      currentQuiz = q;
+      document.getElementById('activeTitle').textContent = `Editing: ${q.title}`;
+      // populate form for editing
+      questionsForm.innerHTML = '';
+      q.questions.forEach((ques, i) => {
+        const b = document.createElement('div');
+        b.className = 'question-block';
+        b.innerHTML = `<label>Q${i+1}</label><input class="q-text" value="${ques.question}">`;
+        if (ques.type === 'mcq') {
+          const optsHtml = document.createElement('div'); optsHtml.className='options';
+          const safeOpts = ques.options || ['','','',''];
+          optsHtml.innerHTML = `
+            <input class="opt" value="${safeOpts[0] || ''}" style="margin-top:8px;padding:8px;border-radius:8px;">
+            <input class="opt" value="${safeOpts[1] || ''}" style="margin-top:8px;padding:8px;border-radius:8px;">
+            <input class="opt" value="${safeOpts[2] || ''}" style="margin-top:8px;padding:8px;border-radius:8px;">
+            <input class="opt" value="${safeOpts[3] || ''}" style="margin-top:8px;padding:8px;border-radius:8px;">
+            <select class="ans-select" style="margin-top:8px;padding:8px;border-radius:8px;">
+              <option value="0">Correct: Option 1</option>
+              <option value="1">Correct: Option 2</option>
+              <option value="2">Correct: Option 3</option>
+              <option value="3">Correct: Option 4</option>
+            </select>
+          `;
+          // set selected based on answer match
+          setTimeout(()=> {
+            const opts = Array.from(optsHtml.querySelectorAll('.opt')).map(x=>x.value);
+            const idxAnswer = opts.indexOf(ques.answer);
+            const sel = optsHtml.querySelector('.ans-select');
+            if (idxAnswer >= 0) sel.value = String(idxAnswer);
+          }, 0);
+          b.appendChild(optsHtml);
+        } else {
+          b.innerHTML += `<input class="ans-text" value="${ques.answer}" style="margin-top:8px;padding:8px;border-radius:8px;">`;
+        }
+        questionsForm.appendChild(b);
+      });
+      // remove edited quiz from list (we'll re-add on save)
+      quizzes.splice(idx, 1);
+      localStorage.setItem('quizzes', JSON.stringify(quizzes));
+      renderSavedList();
+      updateStats();
+    } else if (delBtn) {
+      const idx = Number(delBtn.dataset.idx);
+      const q = quizzes[idx];
+      if (!q) return;
+      if (!confirm(`Delete quiz "${q.title}"?`)) return;
+      quizzes.splice(idx,1);
+      localStorage.setItem('quizzes', JSON.stringify(quizzes));
+      renderSavedList();
+      updateStats();
+    }
+  });
+
+  // Cancel edit
+  cancelEditBtn.addEventListener('click', () => {
+    clearForm();
+  });
+
+  // Demo generator
+  createDemoBtn.addEventListener('click', () => {
+    const demo = {
+      title: `Demo Quiz ${Date.now().toString().slice(-4)}`,
+      topic: 'Demo',
+      questions: [
+        { type:'mcq', question: 'What is 2+2?', options:['3','4','5','6'], answer:'4' },
+        { type:'short', question: 'Name a planet in our solar system', answer:'Earth' }
+      ]
+    };
+    quizzes.unshift(demo);
+    localStorage.setItem('quizzes', JSON.stringify(quizzes));
+    renderSavedList();
+    updateStats();
+    alert('Demo quiz added.');
+  });
+
+  // Search
+  searchInput.addEventListener('input', (e) => {
+    const q = (e.target.value || '').toLowerCase().trim();
+    if (!q) return renderSavedList(quizzes);
+    renderSavedList(quizzes.filter(x => (x.title + ' ' + x.topic).toLowerCase().includes(q)));
+  });
+
+  // Navigation
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('token');
+    window.location.href = 'index.html';
+  });
+  viewScoreboardBtn.addEventListener('click', () => {
+    window.location.href = 'scoreboard.html';
+  });
+
+  // initial stats + render
+  renderSavedList();
+  updateStats();
+
+  // Watch localStorage changes
+  window.addEventListener('storage', () => {
+    quizzes = JSON.parse(localStorage.getItem('quizzes') || '[]');
+    renderSavedList();
+    updateStats();
+  });
+
+});
+</script>
+</body>
+</html>

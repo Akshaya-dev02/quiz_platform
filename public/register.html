@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Register | AI Quiz Platform</title>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    background: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZLPpE3VkyztHfUHasMltr35aU7TjhDb8y2w&s")
+      center/cover no-repeat fixed;
+  }
+
+  /* Dark overlay */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+  }
+
+  /* Floating neon blobs */
+  .blob {
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    background: #764ba2;
+    filter: blur(120px);
+    opacity: 0.6;
+    top: -80px;
+    left: -80px;
+    animation: blobFloat 10s infinite ease-in-out;
+  }
+
+  .blob2 {
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    background: #4bc0c8;
+    filter: blur(120px);
+    opacity: 0.6;
+    bottom: -80px;
+    right: -80px;
+    animation: blobFloat2 11s infinite ease-in-out;
+  }
+
+  @keyframes blobFloat {
+    50% { transform: translate(40px, 30px); }
+  }
+
+  @keyframes blobFloat2 {
+    50% { transform: translate(-40px, -20px); }
+  }
+
+  /* Main Card */
+  .glass-card {
+    position: relative;
+    z-index: 10;
+    width: 90%;
+    max-width: 420px;
+    padding: 40px 35px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    animation: fadeIn 1.2s ease;
+    color: #fff;
+    left:300px;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0px); }
+  }
+
+  .glass-card h1 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  select, input {
+    width: 100%;
+    padding: 14px;
+    margin-top: 15px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    backdrop-filter: blur(8px);
+  }
+
+  input::placeholder, select {
+    color: #e5e5e5;
+  }
+
+  .btn-primary {
+    margin-top: 25px;
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    font-size: 1.1rem;
+    color: white;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    font-weight: 600;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+
+  .glass-card p {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 0.95rem;
+  }
+
+  .glass-card a {
+    color: #a3b6ff;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .top-bar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    top: 20px;
+    left: 0;
+    padding: 0 40px;
+    z-index: 20;
+  }
+
+  .top-btn {
+    padding: 10px 22px;
+    font-size: 1rem;
+    border-radius: 25px;
+    cursor: pointer;
+    border: none;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.15);
+    color: white;
+    transition: 0.3s ease;
+  }
+
+  .top-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-3px);
+  }
+</style>
+
+</head>
+
+<body>
+
+<div class="overlay"></div>
+<div class="blob"></div>
+<div class="blob2"></div>
+
+<div class="glass-card">
+  <h1>Register</h1>
+  <div class="top-bar">
+  <button class="top-btn" onclick="location.href='index.html'">Home</button>
+</div>
+
+  <select id="roleSelect">
+    <option value="user">User</option>
+    <option value="admin">Admin</option>
+  </select>
+
+  <input id="name" placeholder="Full Name" />
+  <input id="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password" />
+
+  <button id="registerBtn" class="btn-primary">Register</button>
+
+  <p>Already have an account? <a href="login.html">Login</a></p>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>

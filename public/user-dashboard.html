@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>User Dashboard | AI Quiz — 3D Cards</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg-1: #0f1724;
+    --glass: rgba(255,255,255,0.06);
+    --accent-a: #7c5cff;
+    --accent-b: #00e0ff;
+    --card-bg: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+  }
+
+  /* Page */
+  html,body{height:100%; margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{
+    background-color: var(--bg-1);
+    color:#e6eef8;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:48px;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow:auto;
+  }
+
+  /* HERO BACKGROUND IMAGE LAYER */
+  .bg-hero{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    background-image: url("/mnt/data/29b5b0f9-39e0-4c62-8027-ebd2666df9a6.png");
+    background-size: cover;
+    background-position: center;
+    filter: blur(6px) saturate(120%) brightness(0.45);
+    transform: scale(1.02);
+  }
+
+  /* subtle moving gradient overlay */
+  .bg-gradient{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    background: radial-gradient(800px 400px at 10% 20%, rgba(124,92,255,0.18), transparent 8%),
+                radial-gradient(700px 350px at 90% 80%, rgba(0,224,255,0.12), transparent 10%);
+    mix-blend-mode: screen;
+    pointer-events:none;
+  }
+
+  /* Main container keeps content centered and gives perspective for 3D */
+  .stage{
+    position:relative;
+    z-index:5;
+    width:100%;
+    max-width:1100px;
+    display:grid;
+    grid-template-columns: 360px 1fr;
+    gap:28px;
+    align-items:start;
+    perspective:1200px; /* 3D perspective */
+  }
+
+  /* Left column - Profile / Controls card */
+  .profile-card {
+    transform-style:preserve-3d;
+    border-radius:16px;
+    padding:22px;
+    background: var(--card-bg);
+    box-shadow: 0 14px 40px rgba(2,6,23,0.7), 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.02);
+    backdrop-filter: blur(10px) saturate(120%);
+    transform: translateZ(40px) rotateX(1deg);
+    overflow: hidden;
+  }
+
+  .profile-top{
+    display:flex;
+    gap:14px;
+    align-items:center;
+    margin-bottom:16px;
+  }
+
+  .avatar {
+    width:64px; height:64px; border-radius:12px;
+    background: linear-gradient(135deg,var(--accent-a),var(--accent-b));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:20px; color:#fff;
+    box-shadow: 0 6px 18px rgba(92,63,255,0.22);
+  }
+
+  .user-meta h2 { margin:0; font-size:18px; font-weight:600; color:#fff; }
+  .user-meta p { margin:4px 0 0 0; font-size:13px; color:rgba(230,238,248,0.75); }
+
+  .controls {
+    margin-top:18px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .btn {
+    border: none;
+    padding:12px 14px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:14px;
+    transition:transform .18s ease, box-shadow .18s ease, opacity .12s ease;
+    box-shadow: 0 6px 18px rgba(2,6,23,0.6);
+    backdrop-filter: blur(6px);
+  }
+
+  .btn-logout { background: rgba(255,255,255,0.06); color:#ffd5d5; }
+  .btn-score { background: linear-gradient(90deg,var(--accent-a),var(--accent-b)); color:#031225; box-shadow:0 10px 28px rgba(0,224,255,0.08); }
+
+  .btn:hover{ transform:translateY(-4px); }
+
+  /* Stats block */
+  .stats {
+    display:flex;
+    gap:12px;
+    margin-top:18px;
+  }
+  .stat {
+    flex:1;
+    background: rgba(255,255,255,0.025);
+    padding:12px;
+    border-radius:10px;
+    text-align:center;
+  }
+  .stat h3 { margin:0; font-size:18px; color:#fff; }
+  .stat p { margin:6px 0 0 0; font-size:12px; color:rgba(230,238,248,0.7); }
+
+  /* Right column - Quizzes & Quiz area stack of 3D cards */
+  .right-col { transform-style:preserve-3d; }
+
+  .top-bar {
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .search {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background: rgba(255,255,255,0.03);
+    padding:8px 12px;
+    border-radius:12px;
+    width:58%;
+  }
+  .search input { background:transparent; border:none; outline:none; color: #e6eef8; width:100%; font-size:14px; }
+
+  .create-quiz {
+    padding:10px 14px;
+    border-radius:12px;
+    border:none;
+    background: linear-gradient(90deg,var(--accent-b),var(--accent-a));
+    color:#041226; font-weight:700;
+  }
+
+  /* Stack container: shows list card on left and active quiz card on top — heavy 3D feel */
+  .stack {
+    display:grid;
+    grid-template-columns: 360px 1fr;
+    gap:20px;
+    align-items:start;
+  }
+
+  /* Quizzes list card (left of stack) */
+  .list-card{
+    border-radius:14px;
+    padding:18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    box-shadow: 0 20px 50px rgba(2,6,23,0.6);
+    transform: translateZ(20px);
+  }
+
+  .list-card h3 { margin:0 0 12px 0; color:#fff; }
+  .quiz-list { display:flex; flex-direction:column; gap:12px; max-height:480px; overflow:auto; padding-right:6px; }
+
+  .quiz-item {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    padding:10px;
+    border-radius:10px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.03);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .quiz-item:hover{ transform: translateY(-6px); box-shadow: 0 18px 40px rgba(0,0,0,0.45); }
+
+  .quiz-item .meta { font-size:14px; color:#eaf3ff; }
+  .quiz-item button {
+    padding:8px 10px;
+    border-radius:8px;
+    border:none;
+    font-weight:600;
+    cursor:pointer;
+    background: linear-gradient(90deg,#ffd369,#ff7a7a);
+    color:#081223;
+  }
+
+  /* Active quiz card (right of stack) - large 3D card */
+  .active-card {
+    border-radius:16px;
+    padding:22px;
+    min-height:260px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    box-shadow: 0 24px 60px rgba(2,6,23,0.7), 0 6px 18px rgba(92,63,255,0.06);
+    transform: translateZ(80px) rotateX(2deg);
+  }
+
+  .active-card h3 { margin-top:0; font-size:20px; color:#fff; }
+  .question-block{
+    margin-top:14px;
+    background: rgba(255,255,255,0.02);
+    padding:12px;
+    border-radius:10px;
+  }
+  .question-block label { display:block; font-weight:600; color:#dfeeff; margin-bottom:8px; }
+  .question-block .options label { display:block; margin:6px 0; cursor:pointer; color:#cfe9ff; }
+
+  .submit-row { margin-top:16px; display:flex; gap:12px; }
+  .btn-ghost {
+    flex:1;
+    padding:12px;
+    border-radius:10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.04);
+    color:#cfe9ff;
+    cursor:pointer;
+    font-weight:700;
+  }
+  .btn-submit {
+    flex:1;
+    padding:12px;
+    border-radius:10px;
+    background: linear-gradient(90deg,var(--accent-a),var(--accent-b));
+    border:none; color:#041226; font-weight:800; cursor:pointer;
+  }
+
+  /* responsive */
+  @media (max-width:980px){
+    .stage{ grid-template-columns: 1fr; padding: 0 18px; }
+    .stack{ grid-template-columns: 1fr; }
+    .list-card{ order:2; transform: translateZ(0); }
+    .active-card{ order:1; transform: translateZ(0) rotateX(0); margin-bottom:16px; }
+    .profile-card{ width:100%; }
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="bg-hero" aria-hidden="true"></div>
+  <div class="bg-gradient" aria-hidden="true"></div>
+
+  <main class="stage">
+
+    <!-- LEFT: Profile + quick controls -->
+    <aside class="profile-card">
+      <div class="profile-top">
+        <div class="avatar">U</div>
+        <div class="user-meta">
+          <h2 id="userName">Guest User</h2>
+          <p id="userEmail">Not logged in</p>
+        </div>
+      </div>
+
+      <div style="font-size:13px; color:rgba(230,238,248,0.75)">
+        Welcome! Attempt AI-generated quizzes and track your progress. Your attempts and results are stored locally.
+      </div>
+
+      <div class="controls">
+        <button id="logoutBtn" class="btn btn-logout">Logout</button>
+      </div>
+
+      <div class="stats" aria-hidden="true">
+        <div class="stat"><h3 id="totalAttempts">0</h3><p>Attempts</p></div>
+        <div class="stat"><h3 id="bestScore">0%</h3><p>Best Score</p></div>
+      </div>
+    </aside>
+
+    <!-- RIGHT: Quizzes and active quiz (stacked) -->
+    <section class="right-col">
+
+      <div class="top-bar">
+        <div class="search" role="search" aria-label="Search quizzes">
+          <svg width="18" height="18" viewbox="0 0 24 24" fill="none" style="opacity:.9">
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <input id="searchInput" placeholder="Search quizzes..." />
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button id="createDemoBtn" class="create-quiz">New Quiz</button>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="list-card">
+          <h3>Available Quizzes</h3>
+          <div id="quizzesList" class="quiz-list" role="list"></div>
+        </div>
+
+        <div class="active-card" id="quizArea">
+          <h3>Select a quiz to begin</h3>
+          <p style="color:rgba(230,238,248,0.7)">When you choose a quiz, questions will appear here. Submit to save results and view scoreboard.</p>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+<script>
+/* ========== DATA & UI HOOKS ========== */
+const logoutBtn = document.getElementById('logoutBtn');
+const quizzesList = document.getElementById('quizzesList');
+const quizArea = document.getElementById('quizArea');
+const totalAttemptsEl = document.getElementById('totalAttempts');
+const bestScoreEl = document.getElementById('bestScore');
+const userNameEl = document.getElementById('userName');
+const userEmailEl = document.getElementById('userEmail');
+const searchInput = document.getElementById('searchInput');
+const createDemoBtn = document.getElementById('createDemoBtn');
+
+/* Load user data if any (token or name saved) - using localStorage keys from earlier code */
+const token = localStorage.getItem('token') || null;
+if(token){
+  try{
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    userNameEl.textContent = payload.email || 'User';
+    userEmailEl.textContent = payload.role || 'user';
+    document.querySelector('.avatar').textContent = (payload.email||'U')[0].toUpperCase();
+  }catch(e){}
+}
+
+/* Load quizzes stored in localStorage (format used earlier) */
+let quizzes = JSON.parse(localStorage.getItem('quizzes') || '[]');
+
+/* Simple stats from stored results */
+function refreshStats(){
+  const results = JSON.parse(localStorage.getItem('results') || '[]');
+  totalAttemptsEl.textContent = results.length || 0;
+  let best = 0;
+  results.forEach(r => { best = Math.max(best, Number(r.percentage||0)); });
+  bestScoreEl.textContent = (best ? best + '%' : '0%');
+}
+refreshStats();
+
+/* Render list of quizzes */
+function renderQuizzes(list = quizzes){
+  quizzesList.innerHTML = '';
+  if(!list.length){
+    quizzesList.innerHTML = '<div style="color:rgba(230,238,248,0.7)">No quizzes available. Click "New Quiz" to generate a demo.</div>';
+    return;
+  }
+  list.forEach((q, i) => {
+    const item = document.createElement('div');
+    item.className = 'quiz-item';
+    item.dataset.index = i;
+    item.innerHTML = `
+      <div>
+        <div class="meta" style="font-weight:700">${q.title}</div>
+        <div style="font-size:12px; color:rgba(230,238,248,0.65)">${q.topic} • ${q.questions.length} q</div>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center">
+        <button class="start-btn">Start</button>
+      </div>
+    `;
+    quizzesList.appendChild(item);
+  });
+}
+renderQuizzes();
+
+/* Search filter */
+searchInput.addEventListener('input', e => {
+  const val = e.target.value.toLowerCase().trim();
+  if(!val) return renderQuizzes(quizzes);
+  renderQuizzes(quizzes.filter(q => (q.title+q.topic).toLowerCase().includes(val)));
+});
+
+/* Create demo quiz (generates and stores a sample quiz) */
+createDemoBtn.addEventListener('click', () => {
+  const demo = {
+    title: `Sample Quiz ${Date.now().toString().slice(-4)}`,
+    topic: 'General Knowledge',
+    questions: [
+      { type:'mcq', question: 'What is the capital of France?', options:['Paris','Berlin','Rome','Madrid'], answer: 'Paris' },
+      { type:'mcq', question: '2 + 2 = ?', options:['3','4','5','2'], answer: '4' },
+      { type:'text', question: 'Name a primary color (red, blue, or yellow)', answer: 'red' }
+    ]
+  };
+  quizzes.unshift(demo);
+  localStorage.setItem('quizzes', JSON.stringify(quizzes));
+  renderQuizzes(quizzes);
+});
+
+/* Click handlers to start quiz */
+quizzesList.addEventListener('click', (e) => {
+  const startBtn = e.target.closest('.start-btn');
+  if(!startBtn) return;
+  const idx = e.target.closest('.quiz-item').dataset.index;
+  const quiz = quizzes[idx];
+  if(!quiz) return;
+  loadQuizIntoArea(quiz, idx);
+});
+
+/* Load quiz UI */
+function loadQuizIntoArea(quiz, idx){
+  quizArea.innerHTML = '';
+  const title = document.createElement('h3');
+  title.textContent = `${quiz.title} — ${quiz.topic}`;
+  const desc = document.createElement('p');
+  desc.style.color='rgba(230,238,248,0.7)';
+  desc.textContent = `Questions: ${quiz.questions.length}. Good luck!`;
+  quizArea.appendChild(title);
+  quizArea.appendChild(desc);
+
+  const form = document.createElement('form');
+  form.style.marginTop = '12px';
+
+  quiz.questions.forEach((q, i) => {
+    const qb = document.createElement('div');
+    qb.className = 'question-block';
+    const lab = document.createElement('label');
+    lab.textContent = `${i+1}. ${q.question}`;
+    qb.appendChild(lab);
+
+    if(q.type === 'mcq'){
+      const opts = document.createElement('div');
+      opts.className = 'options';
+      q.options.forEach(opt => {
+        const oLab = document.createElement('label');
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = `q${i}`;
+        radio.value = opt;
+        radio.required = true;
+        oLab.appendChild(radio);
+        oLab.appendChild(document.createTextNode(' '+opt));
+        opts.appendChild(oLab);
+      });
+      qb.appendChild(opts);
+    } else {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.name = `q${i}`;
+      input.required = true;
+      input.style.width = '100%';
+      input.style.padding = '10px';
+      input.style.marginTop = '6px';
+      input.style.borderRadius = '8px';
+      input.style.border = '1px solid rgba(255,255,255,0.06)';
+      qb.appendChild(input);
+    }
+
+    form.appendChild(qb);
+  });
+
+  const row = document.createElement('div');
+  row.className = 'submit-row';
+  const cancel = document.createElement('button');
+  cancel.type = 'button';
+  cancel.className = 'btn-ghost';
+  cancel.textContent = 'Cancel';
+  cancel.addEventListener('click', () => {
+    quizArea.innerHTML = `<h3>Select a quiz to begin</h3><p style="color:rgba(230,238,248,0.7)">When you choose a quiz, questions will appear here.</p>`;
+  });
+
+  const submit = document.createElement('button');
+  submit.type = 'submit';
+  submit.className = 'btn-submit';
+  submit.textContent = 'Submit Answers';
+
+  row.appendChild(cancel);
+  row.appendChild(submit);
+  form.appendChild(row);
+  quizArea.appendChild(form);
+
+  form.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const fd = new FormData(form);
+    let score = 0;
+    const answers = [];
+
+    quiz.questions.forEach((q,i) => {
+      const ans = (fd.get(`q${i}`) || '').toString().trim();
+      answers.push(ans);
+      if(ans.toLowerCase() === (q.answer || '').toString().toLowerCase()) score++;
+    });
+
+    const percent = ((score/quiz.questions.length) * 100).toFixed(2);
+    const results = JSON.parse(localStorage.getItem('results') || '[]');
+    results.push({
+      quizTitle: quiz.title,
+      answers,
+      correctAnswers: quiz.questions.map(x=>x.answer),
+      score,
+      total: quiz.questions.length,
+      percentage: percent,
+      timestamp: new Date().toLocaleString()
+    });
+    localStorage.setItem('results', JSON.stringify(results));
+    refreshStats();
+    // show quick feedback
+    quizArea.innerHTML = `<h3>Results</h3><p style="color:rgba(230,238,248,0.8) font-size: 150px">You scored <strong>${score}</strong> / ${quiz.questions.length} (${percent}%)</p><div style="margin-top:12px"><button class="btn-ghost" onclick="location.reload()">Back</button></div>`;
+  });
+}
+
+/* Logout and scoreboard navigation */
+logoutBtn.addEventListener('click', () => {
+  localStorage.removeItem('token');
+  window.location.href = 'index.html';
+});
+
+/* initial demo generation if empty */
+if(!quizzes.length){
+  // create two demo quizzes for instant wow
+  quizzes = [
+    {
+      title: 'AI Foundations',
+      topic: 'AI',
+      questions: [
+        { type:'mcq', question:'Which is an AI task?', options:['Image classification','Sweeping floor','Baking'], answer:'Image classification' },
+        { type:'mcq', question:'Eval 3+4', options:['6','7','8','9'], answer:'7' }
+      ]
+    },
+    {
+      title: 'General Trivia',
+      topic: 'General',
+      questions: [
+        { type:'mcq', question:'Planet nearest the sun?', options:['Earth','Venus','Mercury','Mars'], answer:'Mercury' },
+        { type:'text', question:'What color is the sky on a clear day?', answer:'blue' }
+      ]
+    }
+  ];
+  localStorage.setItem('quizzes', JSON.stringify(quizzes));
+  renderQuizzes(quizzes);
+}
+
+/* refresh quizzes in case storage changed elsewhere */
+window.addEventListener('storage', () => {
+  quizzes = JSON.parse(localStorage.getItem('quizzes') || '[]');
+  renderQuizzes(quizzes);
+  refreshStats();
+});
+</script>
+
+</body>
+</html>

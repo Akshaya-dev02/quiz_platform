@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login | AI Quiz</title>
+<link rel="stylesheet" href="css/style.css" />
+
+<style>
+  body {
+    margin: 0;
+    font-family: Poppins, sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: url('https://eu-images.contentstack.com/v3/assets/blt69509c9116440be8/bltdab34f69f74c72fe/65380fc40ef0e002921fc072/AI-thinking-Kittipong_Jirasukhanont-alamy.jpg?width=1280&auto=webp&quality=95&format=jpg&disable=upscale')
+                center/cover no-repeat;
+  }
+
+  body::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(4px);
+    z-index: 0;
+  }
+
+  .login-card {
+    position: relative;
+    z-index: 2;
+    width: 360px;
+    padding: 40px 30px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+    text-align: center;
+    animation: fadeIn 0.8s ease;
+    right : 300px;
+  }
+
+  .login-card h1 {
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 25px;
+  }
+
+  .login-card input {
+    width: 100%;
+    padding: 14px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+  }
+
+  .btn-login {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    margin-top: 10px;
+  }
+ 
+
+  .btn-home {
+    background: rgba(255,255,255,0.25);
+    color: white;
+    backdrop-filter: blur(8px);
+    margin-bottom: 20px;
+    width: auto;
+    padding: 10px 20px;
+    right : 20px;
+    position: absolute;
+    top: 20px;
+    border-radius: 40px;
+  }
+
+  .btn-home:hover {
+    background: rgba(255,255,255,0.35);
+  }
+
+  .btn-primary {
+    background: #667eea;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #5a67d8;
+    transform: translateY(-2px);
+  }
+
+  p {
+    margin-top: 15px;
+    color: white;
+  }
+
+  a {
+    color: #ffd369;
+    text-decoration: none;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="login-card">
+  <h1>Login</h1>
+  <button class="btn btn-home" onclick="location.href='index.html'">Home</button>
+
+  <input id="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password" />
+  <select id="roleSelect" style="display:none"></select>
+
+  <button id="loginBtn" class="btn btn-primary">Login</button>
+
+  <p>No account? <a href="register.html">Register</a></p>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

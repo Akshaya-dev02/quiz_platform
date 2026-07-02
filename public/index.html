@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Quiz Platform</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNSEquWsMFHLOK-MjTRJxZ87e2kAomRa6t9w&s') center/cover no-repeat fixed;
+      font-family: "Poppins", sans-serif;
+      overflow: hidden;
+    }
+
+    /* Optional second overlay background */
+    .bg-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55); 
+      backdrop-filter: blur(6px);
+    }
+
+    /* Floating glowing circles */
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.45;
+      animation: float 9s infinite ease-in-out;
+    }
+
+    .circle.one {
+      width: 300px; height: 300px;
+      background: #667eea;
+      top: -50px; left: -50px;
+    }
+
+    .circle.two {
+      width: 250px; height: 250px;
+      background: #ff4d79;
+      bottom: -40px; right: -40px;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-40px); }
+      100% { transform: translateY(0px); }
+    }
+
+    /* Main glass container */
+    .home-container {
+      z-index: 5;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(15px);
+      padding: 50px 40px;
+      border-radius: 25px;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.4);
+      animation: fadeIn 1.2s ease;
+      color: white;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0px); }
+    }
+
+    h1 { font-size: 2.6rem; margin-bottom: 12px; }
+    p  { font-size: 1.15rem; margin-bottom: 35px; color: #e1e1e1; }
+
+    /* Buttons */
+    .btn-primary, .btn-secondary {
+      padding: 14px 30px;
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      font-size: 1.05rem;
+      transition: 0.3s ease;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+      width: 70%;
+    }
+
+    .btn-primary:hover {
+      background: #5a67d8;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    .btn-secondary {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.18);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.35);
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Overlay + glowing effects -->
+  <div class="bg-overlay"></div>
+  <div class="circle one"></div>
+  <div class="circle two"></div>
+
+  <!-- Main Card -->
+  <div class="home-container">
+    <button class="btn-secondary" id="loginBtn">Login</button>
+
+    <h1>🤖 AI Quiz Platform</h1>
+    <p>Challenge yourself with AI-powered quizzes generated in real time!</p>
+
+    <button class="btn-primary" id="getStartedBtn">Get Started</button>
+  </div>
+
+  <script>
+    document.getElementById('getStartedBtn').onclick = () => {
+      window.location.href = "login.html";
+    }
+
+    document.getElementById('loginBtn').onclick = () => {
+      window.location.href = "register.html";
+    }
+  </script>
+
+</body>
+</html>
